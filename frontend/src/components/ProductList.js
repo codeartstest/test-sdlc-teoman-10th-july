@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import ProductCard from './ProductCard';
+import { ProductSkeletonGrid } from './ProductSkeleton';
 
 const ProductList = () => {
   const [products, setProducts] = useState([]);
@@ -22,7 +23,7 @@ const ProductList = () => {
     fetchProducts();
   }, []);
 
-  if (loading) return <div style={{ textAlign: 'center', padding: '50px' }}>Loading...</div>;
+  if (loading) return <ProductSkeletonGrid count={8} />;
   if (error) return <div style={{ color: 'red', textAlign: 'center', padding: '50px' }}>Error: {error}</div>;
 
   return (
