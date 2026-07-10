@@ -1,40 +1,84 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import ProductCard from './ProductCard';
+import { ProductSkeletonGrid } from './ProductSkeleton';
+import './ProductList.css';
+
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
 const ProductList = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    totalPages: 1,
+    hasNext: false,
+    hasPrev: false,
+  });
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const response = await axios.get('http://localhost:5000/api/products');
-        setProducts(response.data);
-        setLoading(false);
-      } catch (err) {
-        setError(err.message);
-        setLoading(false);
+  const fetchProducts = useCallback(async (page = 1) => {
+    try {
+      setLoading(true);
+      const response = await axios.get(`${API_URL}/api/products?page=${page}&limit=10`);
+      const data = Array.isArray(response.data) ? response.data : response.data.data;
+      setProducts(data);
+      if (!Array.isArray(response.data) && response.data.pagination) {
+        setPagination(response.data.pagination);
       }
-    };
-
-    fetchProducts();
+      setLoading(false);
+    } catch (err) {
+      setError(err.message);
+      setLoading(false);
+    }
   }, []);
 
-  if (loading) return <div style={{ textAlign: 'center', padding: '50px' }}>Loading...</div>;
-  if (error) return <div style={{ color: 'red', textAlign: 'center', padding: '50px' }}>Error: {error}</div>;
+  useEffect(() => {
+    fetchProducts(1);
+  }, [fetchProducts]);
+
+  const handlePageChange = (newPage) => {
+    fetchProducts(newPage);
+  };
+
+  if (loading) return <ProductSkeletonGrid count={8} />;
+  if (error) return <div className="empty-state" style={{ color: 'red' }}>Error: {error}</div>;
+
+  if (products.length === 0) {
+    return (
+      <div className="empty-state">
+        <h2 className="empty-state__title">No products found</h2>
+        <p className="empty-state__text">Check back later for new products.</p>
+      </div>
+    );
+  }
 
   return (
-    <div style={{
-      display: 'grid',
-      gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
-      gap: '20px',
-      padding: '20px 0'
-    }}>
-      {products.map(product => (
-        <ProductCard key={product._id} product={product} />
-      ))}
+    <div>
+      <div className="product-grid">
+        {products.map(product => (
+          <ProductCard key={product._id} product={product} />
+        ))}
+      </div>
+      <div className="pagination">
+        <button
+          onClick={() => handlePageChange(pagination.page - 1)}
+          disabled={!pagination.hasPrev}
+          className="pagination__button"
+        >
+          Previous
+        </button>
+        <span className="pagination__info">
+          Page {pagination.page} of {pagination.totalPages}
+        </span>
+        <button
+          onClick={() => handlePageChange(pagination.page + 1)}
+          disabled={!pagination.hasNext}
+          className="pagination__button"
+        >
+          Next
+        </button>
+      </div>
     </div>
   );
 };
