@@ -1,32 +1,24 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
+import './Navbar.css';
 
 const Navbar = () => {
   const { getTotalItems } = useCart();
 
   return (
-    <nav style={{
-      backgroundColor: '#333',
-      padding: '1rem',
-      color: 'white'
-    }}>
-      <div className="container" style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center'
-      }}>
-        <Link to="/" style={{ color: 'white', textDecoration: 'none', fontSize: '1.5rem' }}>
-          🛍️ E-Commerce
+    <nav className="navbar">
+      <Link to="/" className="navbar__title">
+        E-Commerce
+      </Link>
+      <div>
+        <Link to="/" className="navbar__cart-link">
+          Products
         </Link>
-        <div>
-          <Link to="/" style={{ color: 'white', textDecoration: 'none', marginRight: '20px' }}>
-            Products
-          </Link>
-          <Link to="/cart" style={{ color: 'white', textDecoration: 'none' }}>
-            🛒 Cart ({getTotalItems()})
-          </Link>
-        </div>
+        <Link to="/cart" className="navbar__cart-link">
+          Cart
+          <span className="navbar__cart-count">{getTotalItems()}</span>
+        </Link>
       </div>
     </nav>
   );
