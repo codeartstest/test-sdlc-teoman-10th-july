@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useCart } from '../context/CartContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Navigate } from 'react-router-dom';
 
 const Checkout = () => {
   const { cartItems, getTotalPrice, clearCart } = useCart();
@@ -29,8 +29,7 @@ const Checkout = () => {
   };
 
   if (cartItems.length === 0) {
-    navigate('/');
-    return null;
+    return <Navigate to="/" replace />;
   }
 
   return (
@@ -52,7 +51,7 @@ const Checkout = () => {
             borderBottom: '1px solid #eee'
           }}>
             <span>{item.name} x {item.quantity}</span>
-            <span>${(item.price * item.quantity).toFixed(2)}</span>
+            <span>${((item.price || 0) * item.quantity).toFixed(2)}</span>
           </div>
         ))}
         <div style={{
