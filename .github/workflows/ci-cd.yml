@@ -1,0 +1,128 @@
+name: CI/CD Pipeline
+
+on:
+  workflow_dispatch:
+
+env:
+  JFROG_PLATFORM_URL: ${{ vars.JFROG_PLATFORM_URL }}
+  JF_DOCKER_REGISTRY: ${{ vars.JFROG_DOCKER_REGISTRY }}
+  JF_USER: ${{ vars.JFROG_USERNAME }}
+  JF_PASSWORD: ${{ secrets.JFROG_PASSWORD }}
+  JF_BUILD_NAME: test-sdlc-teoman-10th-july-build
+  JF_BUILD_NUMBER: ${{ github.run_number }}
+  JF_PROJECT: ${{ vars.JFROG_PROJECT }}
+
+jobs:
+  sonar-scan:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install backend dependencies
+        run: cd backend && npm install
+
+      - name: Run tests with coverage
+        run: cd backend && npx jest --coverage --forceExit
+        continue-on-error: true
+
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  build:
+    needs:
+      - sonar-scan
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install frontend dependencies
+        run: cd frontend && npm install
+
+      - name: Build frontend
+        run: cd frontend && npm run build
+
+  deploy-to-jfrog:
+    needs:
+      - build
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup JFrog CLI
+        uses: jfrog/setup-jfrog-cli@v4
+        env:
+          ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
+
+      - name: Configure JFrog CLI
+        run: |
+          jf config add jfrog \
+            --url="${{ env.JFROG_PLATFORM_URL }}" \
+            --user="${{ env.JF_USER }}" \
+            --password="${{ env.JF_PASSWORD }}" \
+            --interactive=false
+
+          jf config use jfrog
+
+      - name: Add Git Info to Build
+        run: |
+          jf rt build-add-git \
+            "${{ env.JF_BUILD_NAME }}" \
+            "${{ env.JF_BUILD_NUMBER }}" \
+            --project="${{ env.JF_PROJECT }}" .
+
+      - name: Docker Login
+        run: |
+          echo "${{ env.JF_PASSWORD }}" | docker login ${{ env.JF_DOCKER_REGISTRY }} \
+            -u "${{ env.JF_USER }}" \
+            --password-stdin
+
+      - name: Build Backend Docker Image
+        run: |
+          docker build \
+            -t ${{ env.JF_DOCKER_REGISTRY }}/docker-dev-local/test-sdlc-teoman-10th-july-backend:${{ github.sha }} \
+            -t ${{ env.JF_DOCKER_REGISTRY }}/docker-dev-local/test-sdlc-teoman-10th-july-backend:latest \
+            ./backend
+
+      - name: Build Frontend Docker Image
+        run: |
+          docker build \
+            -t ${{ env.JF_DOCKER_REGISTRY }}/docker-dev-local/test-sdlc-teoman-10th-july-frontend:${{ github.sha }} \
+            -t ${{ env.JF_DOCKER_REGISTRY }}/docker-dev-local/test-sdlc-teoman-10th-july-frontend:latest \
+            ./frontend
+
+      - name: Push Backend Docker Image
+        run: |
+          docker push ${{ env.JF_DOCKER_REGISTRY }}/docker-dev-local/test-sdlc-teoman-10th-july-backend:${{ github.sha }}
+          docker push ${{ env.JF_DOCKER_REGISTRY }}/docker-dev-local/test-sdlc-teoman-10th-july-backend:latest
+
+      - name: Push Frontend Docker Image
+        run: |
+          docker push ${{ env.JF_DOCKER_REGISTRY }}/docker-dev-local/test-sdlc-teoman-10th-july-frontend:${{ github.sha }}
+          docker push ${{ env.JF_DOCKER_REGISTRY }}/docker-dev-local/test-sdlc-teoman-10th-july-frontend:latest
+
+      - name: Publish Build Info
+        run: |
+          jf rt build-publish \
+            "${{ env.JF_BUILD_NAME }}" \
+            "${{ env.JF_BUILD_NUMBER }}" \
+            --project="${{ env.JF_PROJECT }}"
