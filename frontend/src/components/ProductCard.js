@@ -27,7 +27,7 @@ const ProductCard = ({ product }) => {
       <h3 style={{ margin: '10px 0' }}>{product.name}</h3>
       <p style={{ color: '#666', flex: 1 }}>{product.description}</p>
       <p style={{ fontSize: '1.2rem', fontWeight: 'bold', color: '#2c3e50' }}>
-        ${product.price.toFixed(2)}
+        ${(product.price || 0).toFixed(2)}
       </p>
       <button
         onClick={() => addToCart(product)}

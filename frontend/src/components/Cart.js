@@ -42,7 +42,7 @@ const Cart = () => {
             />
             <div style={{ flex: 1, marginLeft: '20px' }}>
               <h3>{item.name}</h3>
-              <p>${item.price.toFixed(2)}</p>
+              <p>${(item.price || 0).toFixed(2)}</p>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <button
