@@ -1,0 +1,14 @@
+node_modules
+npm-debug.log
+.git
+.gitignore
+.env
+coverage
+tests
+__pycache__
+*.md
+.codeartsdoer
+.sdd
+.agents
+arts
+skills-lock.json
