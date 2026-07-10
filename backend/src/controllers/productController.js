@@ -6,8 +6,8 @@ const productService = require('../services/productService');
  */
 exports.getAllProducts = async (req, res, next) => {
   try {
-    const products = await productService.getAllProducts();
-    res.json(products);
+    const result = await productService.getAllProductsPaginated(req.query.page, req.query.limit);
+    res.json(result);
   } catch (error) {
     next(error);
   }

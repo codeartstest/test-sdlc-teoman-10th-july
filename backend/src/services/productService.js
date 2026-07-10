@@ -27,6 +27,33 @@ const getAllProducts = async () => {
   return Product.find();
 };
 
+const MAX_LIMIT = 50;
+const DEFAULT_LIMIT = 10;
+const DEFAULT_PAGE = 1;
+
+const getAllProductsPaginated = async (page = DEFAULT_PAGE, limit = DEFAULT_LIMIT) => {
+  const pageNum = Math.max(1, parseInt(page) || DEFAULT_PAGE);
+  const limitNum = Math.min(MAX_LIMIT, Math.max(1, parseInt(limit) || DEFAULT_LIMIT));
+  const skip = (pageNum - 1) * limitNum;
+
+  const [products, totalItems] = await Promise.all([
+    Product.find().skip(skip).limit(limitNum),
+    Product.countDocuments(),
+  ]);
+
+  return {
+    data: products,
+    pagination: {
+      page: pageNum,
+      limit: limitNum,
+      totalItems,
+      totalPages: Math.ceil(totalItems / limitNum),
+      hasNext: pageNum < Math.ceil(totalItems / limitNum),
+      hasPrev: pageNum > 1,
+    },
+  };
+};
+
 /**
  * Retrieve a single product by its ID.
  * @param {string} id - The MongoDB ObjectId of the product.
@@ -90,6 +117,7 @@ const deleteProduct = async (id) => {
 
 module.exports = {
   getAllProducts,
+  getAllProductsPaginated,
   getProductById,
   createProduct,
   updateProduct,
