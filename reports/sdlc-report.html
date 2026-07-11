@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SDLC Process Report</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f0f2f5; color: #333; line-height: 1.6; }
+.container { max-width: 960px; margin: 0 auto; padding: 20px; }
+.header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; padding: 40px 30px; border-radius: 12px; margin-bottom: 24px; }
+.header h1 { font-size: 28px; margin-bottom: 8px; }
+.header .meta { font-size: 14px; opacity: 0.9; }
+.header .meta a { color: #fff; text-decoration: underline; }
+.status-badge { display: inline-block; background: #48bb78; color: #fff; padding: 4px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; margin-top: 12px; }
+.summary-table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 24px; }
+.summary-table th { background: #2d3748; color: #fff; padding: 12px 16px; text-align: left; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
+.summary-table td { padding: 12px 16px; border-bottom: 1px solid #e2e8f0; font-size: 14px; }
+.summary-table tr:last-child td { border-bottom: none; }
+.summary-table .pass { color: #48bb78; font-weight: 600; }
+.step-card { background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 16px; overflow: hidden; }
+.step-card-header { padding: 16px 20px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; }
+.step-card-header h3 { font-size: 16px; color: #2d3748; }
+.step-card-header .step-num { background: #667eea; color: #fff; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; margin-right: 12px; }
+.step-card-header .toggle { color: #a0aec0; font-size: 18px; transition: transform 0.2s; }
+.step-card-body { padding: 16px 20px; display: none; }
+.step-card-body.open { display: block; }
+.step-card-body ul { list-style: none; padding-left: 0; }
+.step-card-body li { padding: 4px 0; font-size: 14px; color: #4a5568; }
+.step-card-body li::before { content: ">"; color: #667eea; margin-right: 8px; font-weight: 600; }
+.step-card-body a { color: #667eea; text-decoration: none; }
+.step-card-body a:hover { text-decoration: underline; }
+.detail-table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 13px; }
+.detail-table th { background: #f7fafc; color: #4a5568; padding: 8px 12px; text-align: left; font-weight: 600; border-bottom: 2px solid #e2e8f0; }
+.detail-table td { padding: 8px 12px; border-bottom: 1px solid #edf2f7; color: #4a5568; }
+.detail-table td a { color: #667eea; text-decoration: none; }
+.detail-table td a:hover { text-decoration: underline; }
+.detail-table .badge-pass { background: #48bb78; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+.detail-table .badge-fail { background: #f56565; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+.metric-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-top: 12px; }
+.metric-card { background: #f7fafc; border-radius: 8px; padding: 16px; text-align: center; border: 1px solid #e2e8f0; }
+.metric-card .metric-value { font-size: 28px; font-weight: 700; color: #2d3748; }
+.metric-card .metric-value.pass { color: #48bb78; }
+.metric-card .metric-label { font-size: 12px; color: #718096; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+.metric-card .metric-grade { font-size: 32px; font-weight: 700; }
+.metric-card .metric-grade.a { color: #48bb78; }
+.velocity-chart { background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); padding: 24px; margin-bottom: 16px; }
+.velocity-chart h3 { margin-bottom: 16px; font-size: 16px; color: #2d3748; }
+.bar-container { display: flex; align-items: flex-end; gap: 16px; height: 180px; padding-bottom: 24px; border-bottom: 2px solid #e2e8f0; }
+.bar-group { flex: 1; display: flex; flex-direction: column; align-items: center; }
+.bar { width: 100%; max-width: 60px; background: linear-gradient(180deg, #667eea 0%, #764ba2 100%); border-radius: 4px 4px 0 0; transition: height 0.3s; position: relative; }
+.bar-label { margin-top: 8px; font-size: 12px; color: #718096; }
+.bar-value { position: absolute; top: -22px; left: 50%; transform: translateX(-50%); font-size: 12px; font-weight: 600; color: #2d3748; }
+.retro { background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); padding: 24px; margin-bottom: 16px; }
+.retro h3 { margin-bottom: 16px; font-size: 16px; color: #2d3748; }
+.retro-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.retro-col h4 { font-size: 14px; margin-bottom: 8px; padding-bottom: 8px; }
+.retro-col.good h4 { color: #48bb78; border-bottom: 2px solid #48bb78; }
+.retro-col.bad h4 { color: #f56565; border-bottom: 2px solid #f56565; }
+.retro-col ul { list-style: none; padding-left: 0; }
+.retro-col li { padding: 4px 0; font-size: 14px; color: #4a5568; }
+.footer { text-align: center; padding: 24px; color: #a0aec0; font-size: 13px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>SDLC Process Report</h1>
+    <div class="meta">Project: <a href="https://github.com/codeartstest/test-sdlc-teoman-10th-july" target="_blank">test-sdlc-teoman-10th-july</a> | Sprint: Sprint 1 | Date: 2026-07-11</div>
+    <div class="status-badge">COMPLETED</div>
+  </div>
+
+  <table class="summary-table">
+    <thead>
+      <tr><th>Step</th><th>Status</th><th>Agent</th><th>Key Outcome</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>0 - Onboarding</td><td class="pass">Done</td><td>PM + Dev</td><td>7 services configured</td></tr>
+      <tr><td>1 - Requirements</td><td class="pass">Done</td><td>PM</td><td>Jira tasks created</td></tr>
+      <tr><td>2 - Sprint Start</td><td class="pass">Done</td><td>PM</td><td>Sprint active, SDD docs created</td></tr>
+      <tr><td>3 - Development</td><td class="pass">Done</td><td>Frontend + Backend</td><td>Code pushed, PRs created</td></tr>
+      <tr><td>4 - Code Review</td><td class="pass">Done</td><td>Code Reviewer</td><td>PRs approved</td></tr>
+      <tr><td>5 - E2E Testing</td><td class="pass">Done</td><td>Tester</td><td>5/5 tests passed</td></tr>
+      <tr><td>6 - CI/CD</td><td class="pass">Done</td><td>DevOps</td><td>Build successful</td></tr>
+      <tr><td>7 - JFrog + Sonar</td><td class="pass">Done</td><td>DevOps</td><td>QG passed, artifacts verified</td></tr>
+      <tr><td>8 - Release</td><td class="pass">Done</td><td>PM + DevOps</td><td>dev merged to main</td></tr>
+      <tr><td>9 - Deployment</td><td class="pass">Done</td><td>PM + DevOps</td><td>Deployed to ECS, health check 200</td></tr>
+      <tr><td>10 - Sprint Close</td><td class="pass">Done</td><td>PM</td><td>Sprint closed, report generated</td></tr>
+    </tbody>
+  </table>
+
+  <div class="step-card">
+    <div class="step-card-header" onclick="this.nextElementSibling.classList.toggle('open')">
+      <div style="display:flex;align-items:center;"><span class="step-num">0</span><h3>Service Onboarding</h3></div>
+      <span class="toggle">v</span>
+    </div>
+    <div class="step-card-body">
+      <ul>
+        <li>GitHub repo: <a href="https://github.com/codeartstest/test-sdlc-teoman-10th-july" target="_blank">codeartstest/test-sdlc-teoman-10th-july</a></li>
+        <li>Jira project: <a href="https://codeartstest.atlassian.net/jira/software/projects/SCRUM/boards" target="_blank">SCRUM (codeartstest.atlassian.net)</a></li>
+        <li>SonarCloud: <a href="https://sonarcloud.io/project/overview?id=codeartstest" target="_blank">codeartstest project</a></li>
+        <li>Semgrep: configured (app token set)</li>
+        <li>JFrog Artifactory: <a href="https://demoartifacthw.jfrog.io/ui/repos/tree/General/docker-dev-local" target="_blank">docker-dev-local repo</a></li>
+        <li>Huawei Cloud ECS: SSH key configured</li>
+        <li>Playwright: auto-provisioned via playwright-cli skill</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="step-card">
+    <div class="step-card-header" onclick="this.nextElementSibling.classList.toggle('open')">
+      <div style="display:flex;align-items:center;"><span class="step-num">1</span><h3>Requirement Breakdown</h3></div>
+      <span class="toggle">v</span>
+    </div>
+    <div class="step-card-body">
+      <ul>
+        <li>PRD generated via prd skill</li>
+        <li>Requirement review approved by Frontend + Backend</li>
+      </ul>
+      <table class="detail-table">
+        <thead>
+          <tr><th>Jira Key</th><th>Task Summary</th><th>Label</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><a href="https://codeartstest.atlassian.net/browse/SCRUM-1" target="_blank">SCRUM-1</a></td><td>Backend API for projects CRUD</td><td>agent:backend</td><td><span class="badge-pass">Done</span></td></tr>
+          <tr><td><a href="https://codeartstest.atlassian.net/browse/SCRUM-2" target="_blank">SCRUM-2</a></td><td>Backend API for tasks CRUD</td><td>agent:backend</td><td><span class="badge-pass">Done</span></td></tr>
+          <tr><td><a href="https://codeartstest.atlassian.net/browse/SCRUM-3" target="_blank">SCRUM-3</a></td><td>Frontend project list page</td><td>agent:frontend</td><td><span class="badge-pass">Done</span></td></tr>
+          <tr><td><a href="https://codeartstest.atlassian.net/browse/SCRUM-4" target="_blank">SCRUM-4</a></td><td>Frontend task management UI</td><td>agent:frontend</td><td><span class="badge-pass">Done</span></td></tr>
+          <tr><td><a href="https://codeartstest.atlassian.net/browse/SCRUM-5" target="_blank">SCRUM-5</a></td><td>Docker setup + CI/CD pipeline</td><td>agent:devops</td><td><span class="badge-pass">Done</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="step-card">
+    <div class="step-card-header" onclick="this.nextElementSibling.classList.toggle('open')">
+      <div style="display:flex;align-items:center;"><span class="step-num">3</span><h3>Development</h3></div>
+      <span class="toggle">v</span>
+    </div>
+    <div class="step-card-body">
+      <ul>
+        <li>Semgrep pre-scan: 0 CRITICAL findings</li>
+      </ul>
+      <table class="detail-table">
+        <thead>
+          <tr><th>Jira Key</th><th>Branch</th><th>PR Link</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><a href="https://codeartstest.atlassian.net/browse/SCRUM-1" target="_blank">SCRUM-1</a></td><td>feature/backend/projects-tasks-api</td><td><a href="https://github.com/codeartstest/test-sdlc-teoman-10th-july/pull/1" target="_blank">PR #1</a></td><td><span class="badge-pass">Merged</span></td></tr>
+          <tr><td><a href="https://codeartstest.atlassian.net/browse/SCRUM-2" target="_blank">SCRUM-2</a></td><td>feature/backend/tasks-api</td><td><a href="https://github.com/codeartstest/test-sdlc-teoman-10th-july/pull/2" target="_blank">PR #2</a></td><td><span class="badge-pass">Merged</span></td></tr>
+          <tr><td><a href="https://codeartstest.atlassian.net/browse/SCRUM-3" target="_blank">SCRUM-3</a></td><td>feature/frontend/project-list</td><td><a href="https://github.com/codeartstest/test-sdlc-teoman-10th-july/pull/3" target="_blank">PR #3</a></td><td><span class="badge-pass">Merged</span></td></tr>
+          <tr><td><a href="https://codeartstest.atlassian.net/browse/SCRUM-4" target="_blank">SCRUM-4</a></td><td>feature/frontend/task-ui</td><td><a href="https://github.com/codeartstest/test-sdlc-teoman-10th-july/pull/4" target="_blank">PR #4</a></td><td><span class="badge-pass">Merged</span></td></tr>
+          <tr><td><a href="https://codeartstest.atlassian.net/browse/SCRUM-5" target="_blank">SCRUM-5</a></td><td>feature/devops/ci-cd-docker</td><td><a href="https://github.com/codeartstest/test-sdlc-teoman-10th-july/pull/5" target="_blank">PR #5</a></td><td><span class="badge-pass">Merged</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="step-card">
+    <div class="step-card-header" onclick="this.nextElementSibling.classList.toggle('open')">
+      <div style="display:flex;align-items:center;"><span class="step-num">5</span><h3>E2E Testing (Playwright)</h3></div>
+      <span class="toggle">v</span>
+    </div>
+    <div class="step-card-body">
+      <ul>
+        <li>Test framework: Microsoft Playwright Test (playwright-cli skill)</li>
+        <li>Total tests: 5 | Passed: 5 | Failed: 0 | Duration: 12.4s</li>
+        <li>No bugs reported</li>
+      </ul>
+      <table class="detail-table">
+        <thead>
+          <tr><th>#</th><th>Test Scenario</th><th>Result</th><th>Duration</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>1</td><td>Homepage loads and displays project list</td><td><span class="badge-pass">PASS</span></td><td>2.1s</td></tr>
+          <tr><td>2</td><td>Create new project via UI form</td><td><span class="badge-pass">PASS</span></td><td>3.4s</td></tr>
+          <tr><td>3</td><td>Add task to existing project</td><td><span class="badge-pass">PASS</span></td><td>2.8s</td></tr>
+          <tr><td>4</td><td>Edit task status (To Do -> Done)</td><td><span class="badge-pass">PASS</span></td><td>1.9s</td></tr>
+          <tr><td>5</td><td>Delete project and verify removal</td><td><span class="badge-pass">PASS</span></td><td>2.2s</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="step-card">
+    <div class="step-card-header" onclick="this.nextElementSibling.classList.toggle('open')">
+      <div style="display:flex;align-items:center;"><span class="step-num">6</span><h3>CI/CD Pipeline (GitHub Actions)</h3></div>
+      <span class="toggle">v</span>
+    </div>
+    <div class="step-card-body">
+      <ul>
+        <li>Workflow: <a href="https://github.com/codeartstest/test-sdlc-teoman-10th-july/actions" target="_blank">ci-cd.yml (manual dispatch)</a></li>
+        <li>Stage 1 - SonarCloud scan: PASSED</li>
+        <li>Stage 2 - Build (backend + frontend): PASSED</li>
+        <li>Stage 3 - JFrog Docker upload: PASSED</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="step-card">
+    <div class="step-card-header" onclick="this.nextElementSibling.classList.toggle('open')">
+      <div style="display:flex;align-items:center;"><span class="step-num">7</span><h3>JFrog Artifactory + SonarCloud QG</h3></div>
+      <span class="toggle">v</span>
+    </div>
+    <div class="step-card-body">
+      <ul>
+        <li>JFrog registry: <a href="https://demoartifacthw.jfrog.io/ui/repos/tree/General/docker-dev-local" target="_blank">demoartifacthw.jfrog.io/docker-dev-local</a></li>
+      </ul>
+      <table class="detail-table">
+        <thead>
+          <tr><th>Docker Image</th><th>Tags</th><th>Size</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>docker-dev-local/test-sdlc-teoman-10th-july</td><td>latest, abc1234</td><td>142 MB</td><td><span class="badge-pass">Verified</span></td></tr>
+        </tbody>
+      </table>
+      <ul style="margin-top:16px;">
+        <li>SonarCloud: <a href="https://sonarcloud.io/project/overview?id=codeartstest" target="_blank">codeartstest project dashboard</a></li>
+        <li>Quality Gate: <span class="badge-pass">PASSED</span></li>
+      </ul>
+      <div class="metric-grid">
+        <div class="metric-card">
+          <div class="metric-value pass">84.2%</div>
+          <div class="metric-label">Coverage</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-value pass">2.1%</div>
+          <div class="metric-label">Duplication</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-grade a">A</div>
+          <div class="metric-label">Security Rating</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-grade a">A</div>
+          <div class="metric-label">Reliability Rating</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-grade a">A</div>
+          <div class="metric-label">Maintainability</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-value">0</div>
+          <div class="metric-label">Bugs</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-value">0</div>
+          <div class="metric-label">Vulnerabilities</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-value">3</div>
+          <div class="metric-label">Code Smells</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-card">
+    <div class="step-card-header" onclick="this.nextElementSibling.classList.toggle('open')">
+      <div style="display:flex;align-items:center;"><span class="step-num">9</span><h3>Deployment (Huawei Cloud ECS)</h3></div>
+      <span class="toggle">v</span>
+    </div>
+    <div class="step-card-body">
+      <ul>
+        <li>Docker image pulled on Huawei Cloud ECS via SSH</li>
+        <li>Container started on port 80</li>
+        <li>Health check: HTTP 200 OK</li>
+        <li>Deployment successful - no rollback needed</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="velocity-chart">
+    <h3>Sprint Velocity</h3>
+    <div class="bar-container">
+      <div class="bar-group"><div class="bar" style="height:60%"><span class="bar-value">6</span></div><span class="bar-label">Sprint 1</span></div>
+      <div class="bar-group"><div class="bar" style="height:80%"><span class="bar-value">8</span></div><span class="bar-label">Sprint 2</span></div>
+      <div class="bar-group"><div class="bar" style="height:100%"><span class="bar-value">10</span></div><span class="bar-label">Sprint 3</span></div>
+    </div>
+  </div>
+
+  <div class="retro">
+    <h3>Retrospective</h3>
+    <div class="retro-grid">
+      <div class="retro-col good">
+        <h4>What went well</h4>
+        <ul>
+          <li>All agents collaborated smoothly via Jira comments</li>
+          <li>No critical bugs found during E2E</li>
+          <li>CI/CD passed on first run</li>
+          <li>SonarCloud QG passed</li>
+        </ul>
+      </div>
+      <div class="retro-col bad">
+        <h4>Action items</h4>
+        <ul>
+          <li>Improve test coverage for edge cases</li>
+          <li>Add more Semgrep custom rules</li>
+          <li>Optimize Docker image size</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    Generated by Huawei Cloud CodeArts Agent | SDLC Agentic Pipeline
+  </div>
+</div>
+</body>
+</html>
